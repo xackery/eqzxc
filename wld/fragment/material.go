@@ -1,4 +1,4 @@
-package wld
+package fragment
 
 import (
 	"encoding/binary"
@@ -19,7 +19,7 @@ type Material struct {
 	IsHandled bool
 }
 
-func loadMaterial(r io.ReadSeeker) (*Material, error) {
+func LoadMaterial(r io.ReadSeeker) (*Material, error) {
 	m := &Material{}
 	err := parseMaterial(r, m)
 	if err != nil {

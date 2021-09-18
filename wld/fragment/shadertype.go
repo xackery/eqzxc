@@ -1,4 +1,4 @@
-package wld
+package fragment
 
 const (
 	ShaderTypeDiffuse                         = 0

@@ -1,4 +1,4 @@
-package wld
+package fragment
 
 import (
 	"encoding/binary"
@@ -14,7 +14,7 @@ type VertexColor struct {
 	hashIndex uint32
 }
 
-func loadVertexColor(r io.ReadSeeker) (*VertexColor, error) {
+func LoadVertexColor(r io.ReadSeeker) (*VertexColor, error) {
 	v := &VertexColor{}
 	err := parseVertexColor(r, v)
 	if err != nil {

@@ -12,6 +12,7 @@ func TestLoad(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open %s: %v", path, err)
 	}
+	defer r.Close()
 
 	pfs, err := Load(r)
 	if err != nil {

@@ -1,5 +1,7 @@
 package wld
 
+import "github.com/xackery/eqzxc/wld/fragment"
+
 // Wld represents a world data file
 type Wld struct {
 	IsOldWorld     bool
@@ -7,5 +9,5 @@ type Wld struct {
 	FragmentCount  uint32
 	BspRegionCount uint32
 	Hash           map[int]string
-	Fragments      []Fragment
+	Fragments      []fragment.Fragment
 }

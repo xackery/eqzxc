@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/xackery/eqzxc/wld/fragment"
 )
 
 // Load will load a world file
@@ -84,7 +86,6 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 		wld.Hash[offset] = h
 		offset += len(h) + 1
 	}
-	fmt.Println(wld.Hash)
 
 	for i := 0; i < int(wld.FragmentCount); i++ {
 		var fragSize uint32
@@ -98,22 +99,55 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 			return fmt.Errorf("read fragment index %d/%d: %w", i, wld.FragmentCount, err)
 		}
 		switch fragIndex {
+		case 0x10:
+			//TODO: skeleton hierarchy
+			return fmt.Errorf("skeleton hierarchy detected, wld not supported")
+		case 0x11:
+			t, err := fragment.LoadSkeletonReference(r)
+			if err != nil {
+				return fmt.Errorf("parse skeleton reference %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, t)
+		case 0x12:
+			t, err := fragment.LoadTrack(r)
+			if err != nil {
+				return fmt.Errorf("parse track %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, t)
+		case 0x13:
+			t, err := fragment.LoadTrackReference(r)
+			if err != nil {
+				return fmt.Errorf("parse track reference %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, t)
 		case 0x1B:
-			l, err := loadLightSource(r)
+			l, err := fragment.LoadLightSource(r)
 			if err != nil {
 				return fmt.Errorf("parse light source %d/%d: %w", i, wld.FragmentCount, err)
 			}
 			wld.Fragments = append(wld.Fragments, l)
+		case 0x27:
+			v, err := fragment.LoadParticleSpriteReference(r)
+			if err != nil {
+				return fmt.Errorf("parse particle sprite reference %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, v)
 		case 0x30:
-			m, err := loadMaterial(r)
+			m, err := fragment.LoadMaterial(r)
 			if err != nil {
 				return fmt.Errorf("parse material %d/%d: %w", i, wld.FragmentCount, err)
 			}
 			wld.Fragments = append(wld.Fragments, m)
 		case 0x32:
-			v, err := loadVertexColor(r)
+			v, err := fragment.LoadVertexColor(r)
 			if err != nil {
 				return fmt.Errorf("parse vertex color %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, v)
+		case 0x33:
+			v, err := fragment.LoadVertexColorReference(r)
+			if err != nil {
+				return fmt.Errorf("parse vertex color reference %d/%d: %w", i, wld.FragmentCount, err)
 			}
 			wld.Fragments = append(wld.Fragments, v)
 		}

@@ -1,4 +1,4 @@
-package wld
+package fragment
 
 import (
 	"encoding/binary"
@@ -20,7 +20,7 @@ type LightSource struct {
 	hashIndex    uint32
 }
 
-func loadLightSource(r io.ReadSeeker) (*LightSource, error) {
+func LoadLightSource(r io.ReadSeeker) (*LightSource, error) {
 	l := &LightSource{}
 	err := parseLightSource(r, l)
 	if err != nil {

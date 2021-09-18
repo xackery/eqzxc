@@ -1,4 +1,4 @@
-package wld
+package fragment
 
 const (
 	// Used for boundaries that are not rendered. TextInfoReference can be null or have reference.
