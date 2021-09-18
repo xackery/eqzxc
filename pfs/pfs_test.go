@@ -15,7 +15,7 @@ func TestLoad(t *testing.T) {
 
 	pfs, err := Load(r)
 	if err != nil {
-		t.Fatalf("load: %v", err)
+		t.Fatalf("load pfs: %v", err)
 	}
 	fmt.Println(pfs.ShortName)
 }
