@@ -3,10 +3,8 @@
 EverQuest Zip Extract/Compressor is a go-based program for working with s3d, pfs, eq
 
 ## Features
-- [ ] #1
-- [ ] #2
-- [ ] #3
-- [ ] #4
+
+[Working on first release](https://github.com/xackery/eqzxc/issues/5) (pfs loading, wld parsing, gtlf exporting)
 
 
 ## Inspiration
