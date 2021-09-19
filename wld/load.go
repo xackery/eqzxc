@@ -126,6 +126,12 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 				return fmt.Errorf("parse track reference %d/%d: %w", i, wld.FragmentCount, err)
 			}
 			wld.Fragments = append(wld.Fragments, t)
+		case 0x15:
+			t, err := fragment.LoadObjectInstance(r)
+			if err != nil {
+				return fmt.Errorf("parse object instance %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, t)
 		case 0x1B:
 			l, err := fragment.LoadLightSource(r)
 			if err != nil {
@@ -142,6 +148,12 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 			v, err := fragment.LoadParticleSpriteReference(r)
 			if err != nil {
 				return fmt.Errorf("parse particle sprite reference %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, v)
+		case 0x2D:
+			v, err := fragment.LoadMeshReference(r)
+			if err != nil {
+				return fmt.Errorf("parse mesh reference %d/%d: %w", i, wld.FragmentCount, err)
 			}
 			wld.Fragments = append(wld.Fragments, v)
 		case 0x30:
@@ -163,7 +175,13 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 			}
 			wld.Fragments = append(wld.Fragments, v)
 		case 0x34:
-			return fmt.Errorf("particle cloud detected, unsupported at this time")
+			v, err := fragment.LoadParticleCloud(r)
+			if err != nil {
+				return fmt.Errorf("parse particle cloud %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, v)
+		default:
+			fmt.Printf("unsupported fragment 0x%x\n", fragIndex)
 		}
 
 		_, err = r.Seek(fragPosition+int64(fragSize), io.SeekStart)
