@@ -19,9 +19,17 @@ func TestLoad(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load pfs: %v", err)
 	}
+	if pfs == nil {
+		t.Fatalf("nil pfs")
+	}
+	if 0 == 1 {
+		extract(t, pfs)
+	}
+}
 
+func extract(t *testing.T, pfs *Pfs) {
 	dataPath := "test/data/"
-	err = os.RemoveAll(dataPath)
+	err := os.RemoveAll(dataPath)
 	if err != nil {
 		t.Fatalf("removeall %s: %v", dataPath, err)
 	}
@@ -36,5 +44,4 @@ func TestLoad(t *testing.T) {
 			t.Fatalf("write %s: %v", path, err)
 		}
 	}
-
 }

@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"sort"
+
+	"github.com/xackery/eqzxc/crc"
 )
 
 // Load will load a pfs file
@@ -168,6 +170,12 @@ func parse(r io.ReadSeeker, pfs *Pfs) error {
 			return fmt.Errorf("entry %d has no name", i)
 		}
 		entry.Name = filenames[i]
+		//TODO: fix CRC generation, #6
+		genCRC := crc.FilenameCRC32(entry.Name)
+		if err != nil {
+			return fmt.Errorf("generate crc: %w", err)
+		}
+		fmt.Println(i, entry.Name, entry.CRC, genCRC)
 	}
 	return nil
 }
