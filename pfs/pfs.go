@@ -6,6 +6,20 @@ type Pfs struct {
 	Files     []*PfsEntry
 }
 
+type ByOffset []*PfsEntry
+
+func (s ByOffset) Len() int {
+	return len(s)
+}
+
+func (s ByOffset) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s ByOffset) Less(i, j int) bool {
+	return s[i].Offset < s[j].Offset
+}
+
 type PfsEntry struct {
 	Name   string
 	Data   []byte

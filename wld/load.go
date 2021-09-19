@@ -90,6 +90,7 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 	for i := 0; i < int(wld.FragmentCount); i++ {
 		var fragSize uint32
 		var fragIndex int32
+
 		err = binary.Read(r, binary.LittleEndian, &fragSize)
 		if err != nil {
 			return fmt.Errorf("read fragment size %d/%d: %w", i, wld.FragmentCount, err)
@@ -97,6 +98,11 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 		err = binary.Read(r, binary.LittleEndian, &fragIndex)
 		if err != nil {
 			return fmt.Errorf("read fragment index %d/%d: %w", i, wld.FragmentCount, err)
+		}
+
+		fragPosition, err := r.Seek(0, io.SeekCurrent)
+		if err != nil {
+			return fmt.Errorf("frag position seek %d/%d: %w", i, wld.FragmentCount, err)
 		}
 		switch fragIndex {
 		case 0x10:
@@ -126,6 +132,12 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 				return fmt.Errorf("parse light source %d/%d: %w", i, wld.FragmentCount, err)
 			}
 			wld.Fragments = append(wld.Fragments, l)
+		case 0x26:
+			v, err := fragment.LoadParticleSprite(r)
+			if err != nil {
+				return fmt.Errorf("parse particle sprite %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, v)
 		case 0x27:
 			v, err := fragment.LoadParticleSpriteReference(r)
 			if err != nil {
@@ -150,6 +162,13 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 				return fmt.Errorf("parse vertex color reference %d/%d: %w", i, wld.FragmentCount, err)
 			}
 			wld.Fragments = append(wld.Fragments, v)
+		case 0x34:
+			return fmt.Errorf("particle cloud detected, unsupported at this time")
+		}
+
+		_, err = r.Seek(fragPosition+int64(fragSize), io.SeekStart)
+		if err != nil {
+			return fmt.Errorf("seek end of frag %d/%d: %w", i, wld.FragmentCount, err)
 		}
 	}
 	return nil

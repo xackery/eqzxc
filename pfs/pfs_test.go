@@ -2,6 +2,7 @@ package pfs
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -18,5 +19,22 @@ func TestLoad(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load pfs: %v", err)
 	}
-	fmt.Println(pfs.ShortName)
+
+	dataPath := "test/data/"
+	err = os.RemoveAll(dataPath)
+	if err != nil {
+		t.Fatalf("removeall %s: %v", dataPath, err)
+	}
+	err = os.MkdirAll(dataPath, 0755)
+	if err != nil {
+		t.Fatalf("mkdirall %s: %v", dataPath, err)
+	}
+	for _, entry := range pfs.Files {
+		path := fmt.Sprintf("%s%s", dataPath, entry.Name)
+		err = ioutil.WriteFile(path, entry.Data, os.ModePerm)
+		if err != nil {
+			t.Fatalf("write %s: %v", path, err)
+		}
+	}
+
 }

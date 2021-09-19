@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"sort"
 )
 
 // Load will load a pfs file
@@ -19,7 +20,6 @@ func Load(r io.ReadSeeker) (*Pfs, error) {
 }
 
 func parse(r io.ReadSeeker, pfs *Pfs) error {
-
 	var directoryIndex uint32
 	var magicNumber uint32
 	var versionNumber uint32
@@ -49,6 +49,9 @@ func parse(r io.ReadSeeker, pfs *Pfs) error {
 	if err != nil {
 		return fmt.Errorf("read file count: %w", err)
 	}
+	if fileCount == 0 {
+		return fmt.Errorf("empty file")
+	}
 
 	filenames := []string{}
 
@@ -64,23 +67,24 @@ func parse(r io.ReadSeeker, pfs *Pfs) error {
 		if err != nil {
 			return fmt.Errorf("read offset %d/%d: %w", i, fileCount, err)
 		}
-
+		debugInfo := fmt.Sprintf("%d/%d 0x%x", i, fileCount, entry.Offset)
+		// size is the uncompressed size of the file
 		var size uint32
 		err = binary.Read(r, binary.LittleEndian, &size)
 		if err != nil {
-			return fmt.Errorf("read size %d/%d: %w", i, fileCount, err)
+			return fmt.Errorf("read size %s: %w", debugInfo, err)
 		}
 
-		buf := bytes.NewBuffer(entry.Data)
+		buf := bytes.NewBuffer(nil)
 
 		cachedOffset, err := r.Seek(0, io.SeekCurrent)
 		if err != nil {
-			return fmt.Errorf("seek cached offset %d/%d: %w", i, fileCount, err)
+			return fmt.Errorf("seek cached offset %s: %w", debugInfo, err)
 		}
 
 		_, err = r.Seek(int64(entry.Offset), io.SeekStart)
 		if err != nil {
-			return fmt.Errorf("seek offset %d/%d: %w", i, fileCount, err)
+			return fmt.Errorf("seek offset %s: %w", debugInfo, err)
 		}
 
 		for uint32(buf.Len()) != size {
@@ -88,69 +92,82 @@ func parse(r io.ReadSeeker, pfs *Pfs) error {
 			var inflatedLength uint32
 			err = binary.Read(r, binary.LittleEndian, &deflatedLength)
 			if err != nil {
-				return fmt.Errorf("read deflated length %d/%d: %w", i, fileCount, err)
+				return fmt.Errorf("read deflated length %s: %w", debugInfo, err)
 			}
 
 			err = binary.Read(r, binary.LittleEndian, &inflatedLength)
 			if err != nil {
-				return fmt.Errorf("read inflated length %d/%d: %w", i, fileCount, err)
+				return fmt.Errorf("read inflated length %s: %w", debugInfo, err)
 			}
+
+			//if inflatedLength < deflatedLength {
+			//	return fmt.Errorf("inflated < deflated, offset misaligned? %d/%d", i, fileCount)
+			//}
 
 			compressedData := make([]byte, deflatedLength)
 			err = binary.Read(r, binary.LittleEndian, compressedData)
 			if err != nil {
-				return fmt.Errorf("read compressed data: %d/%d: %w", i, fileCount, err)
+				return fmt.Errorf("read compressed data: %s: %w", debugInfo, err)
 			}
 
 			fr, err := zlib.NewReaderDict(bytes.NewReader(compressedData), nil)
 			if err != nil {
-				return fmt.Errorf("zlib new reader dict %d/%d: %w", i, fileCount, err)
+				return fmt.Errorf("zlib new reader dict %s: %w", debugInfo, err)
 			}
 
 			inflatedWritten, err := io.Copy(buf, fr)
 			if err != nil {
-				return fmt.Errorf("copy: %d/%d: %w", i, fileCount, err)
+				return fmt.Errorf("copy: %s: %w", debugInfo, err)
 			}
+
 			if inflatedWritten != int64(inflatedLength) {
-				return fmt.Errorf("inflate mismatch %d/%d: %w", i, fileCount, err)
+				return fmt.Errorf("inflate mismatch %s: %w", debugInfo, err)
 			}
 		}
 		if buf.Len() < int(size) {
-			return fmt.Errorf("size mismatch %d/%d: %w", i, fileCount, err)
+			return fmt.Errorf("size mismatch %s: %w", debugInfo, err)
 		}
 		entry.Data = buf.Bytes()
 
 		if entry.CRC == 0x61580AC9 {
-			//TODO: figure out why offset of buf.Bytes is incorrect
+			fr := bytes.NewReader(buf.Bytes())
 			var filenameCount uint32
-			err = binary.Read(r, binary.LittleEndian, &filenameCount)
+			err = binary.Read(fr, binary.LittleEndian, &filenameCount)
 			if err != nil {
-				return fmt.Errorf("filename count %d/%d: %w", i, fileCount, err)
+				return fmt.Errorf("filename count %s: %w", debugInfo, err)
 			}
 
-			fr := bytes.NewReader(buf.Bytes())
 			for j := uint32(0); j < filenameCount; j++ {
 				err = binary.Read(fr, binary.LittleEndian, &value)
 				if err != nil {
-					return fmt.Errorf("filename length %d/%d: %w", i, fileCount, err)
+					return fmt.Errorf("filename length %s: %w", debugInfo, err)
 				}
 				filename, err := parseFixedString(fr, value)
 				if err != nil {
-					return fmt.Errorf("filename %d/%d: %w", i, fileCount, err)
+					return fmt.Errorf("filename %s: %w", debugInfo, err)
 				}
 				filenames = append(filenames, filename)
 			}
+
 			_, err = r.Seek(cachedOffset, io.SeekStart)
 			if err != nil {
-				return fmt.Errorf("seek cached offset %d/%d: %w", i, fileCount, err)
+				return fmt.Errorf("seek cached offset %s: %w", debugInfo, err)
 			}
 			continue
 		}
 		pfs.Files = append(pfs.Files, entry)
 		_, err = r.Seek(cachedOffset, io.SeekStart)
 		if err != nil {
-			return fmt.Errorf("seek cached offset %d/%d: %w", i, fileCount, err)
+			return fmt.Errorf("seek cached offset %s: %w", debugInfo, err)
 		}
+	}
+
+	sort.Sort(ByOffset(pfs.Files))
+	for i, entry := range pfs.Files {
+		if len(filenames) < i {
+			return fmt.Errorf("entry %d has no name", i)
+		}
+		entry.Name = filenames[i]
 	}
 	return nil
 }
