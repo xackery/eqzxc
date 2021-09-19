@@ -44,9 +44,9 @@ func parseObjectInstance(r io.ReadSeeker, v *ObjectInstance) error {
 		return fmt.Errorf("read flags: %w", err)
 	}
 	// Main zone: 0x2E, Objects: 0x32E
-	if flags != 0x2E && flags != 0x32E {
-		return fmt.Errorf("unknown flags want 0x2E or 0x32E, got 0x%x", flags)
-	}
+	//TODO if flags != 0x2E && flags != 0x32E {
+	//	return fmt.Errorf("unknown flags want 0x2E or 0x32E, got 0x%x", flags)
+	//}
 
 	err = binary.Read(r, binary.LittleEndian, &value)
 	if err != nil {
