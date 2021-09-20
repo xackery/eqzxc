@@ -138,6 +138,12 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 				return fmt.Errorf("parse light source %d/%d: %w", i, wld.FragmentCount, err)
 			}
 			wld.Fragments = append(wld.Fragments, l)
+		case 0x22:
+			v, err := fragment.LoadBspRegion(r)
+			if err != nil {
+				return fmt.Errorf("parse bsp region %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, v)
 		case 0x26:
 			v, err := fragment.LoadParticleSprite(r)
 			if err != nil {
@@ -148,6 +154,12 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 			v, err := fragment.LoadParticleSpriteReference(r)
 			if err != nil {
 				return fmt.Errorf("parse particle sprite reference %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, v)
+		case 0x28:
+			v, err := fragment.LoadLightInstance(r)
+			if err != nil {
+				return fmt.Errorf("parse light instance %d/%d: %w", i, wld.FragmentCount, err)
 			}
 			wld.Fragments = append(wld.Fragments, v)
 		case 0x2D:
