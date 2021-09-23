@@ -14,7 +14,7 @@ func Load(r io.ReadSeeker) (*Wld, error) {
 	wld := &Wld{}
 	err := parse(r, wld)
 	if err != nil {
-		return nil, fmt.Errorf("parse: %w", err)
+		return nil, fmt.Errorf("parse wld: %w", err)
 	}
 	return wld, nil
 }
@@ -193,6 +193,7 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 			}
 			wld.Fragments = append(wld.Fragments, v)
 		default:
+			//return fmt.Errorf("unsupported fragment 0x%x %d/%d", fragIndex, i, wld.FragmentCount)
 			fmt.Printf("unsupported fragment 0x%x\n", fragIndex)
 		}
 

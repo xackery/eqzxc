@@ -16,7 +16,7 @@ func TestLoad(t *testing.T) {
 
 	wld, err := Load(r)
 	if err != nil {
-		t.Fatalf("load: %v", err)
+		t.Fatalf("load wld: %v", err)
 	}
 	fmt.Println(wld.ShortName)
 }
