@@ -197,17 +197,17 @@ const (
 	//	Brush surfaces.
 	dirEntryBrushsides = 9
 	//	Vertices used to describe faces.
-	dirEntryVertexes = 0
+	dirEntryVertexes = 10
 	//	Lists of offsets, one list per mesh.
-	dirEntryMeshverts = 1
+	dirEntryMeshverts = 11
 	//	List of special map effects.
-	dirEntryEffects = 2
+	dirEntryEffects = 12
 	//	Surface geometry.
-	dirEntryFaces = 3
+	dirEntryFaces = 13
 	//	Packed lightmap data.
-	dirEntryLightmaps = 4
+	dirEntryLightmaps = 14
 	//	Local illumination data.
-	dirEntryLightvols = 5
+	dirEntryLightvols = 15
 	//	Cluster-cluster visibility data.
-	dirEntryVisdata = 6
+	dirEntryVisdata = 16
 )

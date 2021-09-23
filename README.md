@@ -10,12 +10,14 @@ EverQuest Zip Extract/Compressor is a go-based program for working with s3d, pfs
 ## Goals
 - load a pfs (*.eqg, *.s3d, or *.pfs)
 - load a wld
-- convert wld to gltf
+- convert wld to bsp or gltf
     - (convert lights.wld to gltf too!)
     - (convert objects.wld to gltf too even if just meta info since it's a world - object reference)
     - (extract wld region data to a markdown file you can edit or maybe use meta data points in blender if i wanted to be slick)
+- open bsp in netradiant, edit content, save
 - open gltf in blender, edit content, save
 - convert gltf to wld
+- convert bsp to wld
 - save modified wld back into pfs
 - have eq load the modified zone
 
