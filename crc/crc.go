@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"hash/crc32"
 	"io"
 )
 
@@ -60,6 +61,10 @@ func init() {
 		}
 		crcPfsTables[e] = crc
 	}
+}
+
+func Filename2CRC32(name string) uint32 {
+	return crc32.ChecksumIEEE([]byte(name))
 }
 
 // FilenameCRC32 returns the CRC of a file's name

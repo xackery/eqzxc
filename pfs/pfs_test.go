@@ -25,6 +25,15 @@ func TestLoad(t *testing.T) {
 	if 0 == 1 {
 		extract(t, pfs)
 	}
+	f, err := os.Create("test/test.s3d")
+	if err != nil {
+		t.Fatalf("create test.s3d: %s", err.Error())
+	}
+	err = pfs.Save(f)
+	if err != nil {
+		t.Fatalf("save: %s", err.Error())
+	}
+
 }
 
 func extract(t *testing.T, pfs *Pfs) {

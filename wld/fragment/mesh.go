@@ -212,8 +212,7 @@ func parseMesh(r io.ReadSeeker, v *Mesh, isNewWorldFormat bool) error {
 		return fmt.Errorf("read unknown2: %w", err)
 	}
 
-	var scale float32
-	scale = float32(1 / float32(int(1)<<value))
+	scale := float32(1 / float32(int(1)<<value))
 
 	for i := 0; i < int(vertexCount); i++ {
 		pos := math32.Vector3{}
@@ -274,7 +273,6 @@ func parseMesh(r io.ReadSeeker, v *Mesh, isNewWorldFormat bool) error {
 		pos.X /= 256
 		pos.Y /= 256
 		v.TextureUVCoordinates = append(v.TextureUVCoordinates, pos)
-
 	}
 
 	for i := 0; i < int(normalsCount); i++ {

@@ -14,14 +14,14 @@ import (
 // Load will load a pfs file
 func Load(r io.ReadSeeker) (*Pfs, error) {
 	pfs := &Pfs{}
-	err := parse(r, pfs)
+	err := decode(r, pfs)
 	if err != nil {
-		return nil, fmt.Errorf("parse: %w", err)
+		return nil, fmt.Errorf("decode: %w", err)
 	}
 	return pfs, nil
 }
 
-func parse(r io.ReadSeeker, pfs *Pfs) error {
+func decode(r io.ReadSeeker, pfs *Pfs) error {
 	var directoryIndex uint32
 	var magicNumber uint32
 	var versionNumber uint32
@@ -35,6 +35,10 @@ func parse(r io.ReadSeeker, pfs *Pfs) error {
 	err = binary.Read(r, binary.LittleEndian, &magicNumber)
 	if err != nil {
 		return fmt.Errorf("read magic number: %w", err)
+	}
+
+	if magicNumber != 0x20534650 {
+		return fmt.Errorf("invalid magic number, got 0x%x, want 0x20534650", magicNumber)
 	}
 
 	err = binary.Read(r, binary.LittleEndian, &versionNumber)
@@ -171,6 +175,7 @@ func parse(r io.ReadSeeker, pfs *Pfs) error {
 		}
 		entry.Name = filenames[i]
 		//TODO: fix CRC generation, #6
+
 		genCRC := crc.FilenameCRC32(entry.Name)
 		if err != nil {
 			return fmt.Errorf("generate crc: %w", err)

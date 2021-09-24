@@ -107,7 +107,7 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 		switch fragIndex {
 		case 0x10:
 			//TODO: skeleton hierarchy
-			return fmt.Errorf("skeleton hierarchy detected, wld not supported")
+			return fmt.Errorf("skeleton hierarchy detected and not supported")
 		case 0x11:
 			t, err := fragment.LoadSkeletonReference(r)
 			if err != nil {
@@ -138,6 +138,12 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 				return fmt.Errorf("parse light source %d/%d: %w", i, wld.FragmentCount, err)
 			}
 			wld.Fragments = append(wld.Fragments, l)
+		case 0x1C:
+			l, err := fragment.LoadLightSourceReference(r)
+			if err != nil {
+				return fmt.Errorf("parse light source reference %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, l)
 		case 0x22:
 			v, err := fragment.LoadBspRegion(r)
 			if err != nil {
@@ -162,6 +168,12 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 				return fmt.Errorf("parse light instance %d/%d: %w", i, wld.FragmentCount, err)
 			}
 			wld.Fragments = append(wld.Fragments, v)
+		case 0x2C:
+			v, err := fragment.LoadLegacyMesh(r)
+			if err != nil {
+				return fmt.Errorf("parse legacy mesh %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, v)
 		case 0x2D:
 			v, err := fragment.LoadMeshReference(r)
 			if err != nil {
@@ -174,6 +186,12 @@ func parse(r io.ReadSeeker, wld *Wld) error {
 				return fmt.Errorf("parse material %d/%d: %w", i, wld.FragmentCount, err)
 			}
 			wld.Fragments = append(wld.Fragments, m)
+		case 0x31:
+			v, err := fragment.LoadMaterialList(r)
+			if err != nil {
+				return fmt.Errorf("parse material list %d/%d: %w", i, wld.FragmentCount, err)
+			}
+			wld.Fragments = append(wld.Fragments, v)
 		case 0x32:
 			v, err := fragment.LoadVertexColor(r)
 			if err != nil {
