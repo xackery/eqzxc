@@ -13,11 +13,20 @@ func TestLoad(t *testing.T) {
 	}
 	defer r.Close()
 
-	bsp, err := Load(r)
+	bsp, err := Decode(r)
 	if err != nil {
-		t.Fatalf("load bsp: %v", err)
+		t.Fatalf("decode bsp: %v", err)
 	}
 	if bsp == nil {
 		t.Fatalf("nil bsp")
+	}
+
+	f, err := os.Create("test/out.bsp")
+	if err != nil {
+		t.Fatalf("create out.bsp: %s", err.Error())
+	}
+	err = bsp.Encode(f)
+	if err != nil {
+		t.Fatalf("encode: %s", err.Error())
 	}
 }

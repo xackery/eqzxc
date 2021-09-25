@@ -6,18 +6,16 @@ import (
 	"io"
 )
 
-func Load(r io.ReadSeeker) (*BSP, error) {
+func Decode(r io.ReadSeeker) (*BSP, error) {
 	b := &BSP{}
-	err := parse(r, b)
+	err := b.read(r)
 	if err != nil {
-		return nil, fmt.Errorf("parse: %w", err)
+		return nil, fmt.Errorf("read: %w", err)
 	}
 	return b, nil
 }
 
-func parse(r io.ReadSeeker, b *BSP) error {
-	//var value int32
-
+func (b *BSP) read(r io.ReadSeeker) error {
 	bh := &bspHeader{}
 	err := binary.Read(r, binary.LittleEndian, bh)
 	if err != nil {
@@ -38,11 +36,20 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		return fmt.Errorf("read dirEntries: %w", err)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryEntities].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek entities: %w", err)
+	}
+
 	b.EntityInfo, err = parseFixedString(r, uint32(dirEntries[dirEntryEntities].Size))
 	if err != nil {
 		return fmt.Errorf("parse entities: %w", err)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryTextures].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek texture: %w", err)
+	}
 	count := dirEntries[dirEntryTextures].Size / 76
 	for i := int32(0); i < count; i++ {
 		v := &Texture{}
@@ -53,6 +60,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.Textures = append(b.Textures, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryPlanes].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek plane: %w", err)
+	}
 	count = dirEntries[dirEntryPlanes].Size / 16
 	for i := int32(0); i < count; i++ {
 		v := &Plane{}
@@ -63,6 +74,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.Planes = append(b.Planes, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryNodes].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek node: %w", err)
+	}
 	count = dirEntries[dirEntryNodes].Size / 36
 	for i := int32(0); i < count; i++ {
 		v := &Node{}
@@ -73,6 +88,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.Nodes = append(b.Nodes, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryLeafs].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek leaf: %w", err)
+	}
 	count = dirEntries[dirEntryLeafs].Size / 8
 	for i := int32(0); i < count; i++ {
 		v := &Leaf{}
@@ -83,6 +102,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.Leaves = append(b.Leaves, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryLeaffaces].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek leaf face: %w", err)
+	}
 	count = dirEntries[dirEntryLeaffaces].Size / 4
 	for i := int32(0); i < count; i++ {
 		v := &LeafFace{}
@@ -93,6 +116,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.LeafFaces = append(b.LeafFaces, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryLeafbrushes].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek leaf brush: %w", err)
+	}
 	count = dirEntries[dirEntryLeafbrushes].Size / 4
 	for i := int32(0); i < count; i++ {
 		v := &LeafBrush{}
@@ -103,6 +130,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.LeafBrushes = append(b.LeafBrushes, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryModels].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek model: %w", err)
+	}
 	count = dirEntries[dirEntryModels].Size / 40
 	for i := int32(0); i < count; i++ {
 		v := &Model{}
@@ -113,6 +144,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.Models = append(b.Models, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryBrushes].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek brush: %w", err)
+	}
 	count = dirEntries[dirEntryBrushes].Size / 12
 	for i := int32(0); i < count; i++ {
 		v := &Brush{}
@@ -123,6 +158,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.Brushes = append(b.Brushes, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryBrushsides].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek brush side: %w", err)
+	}
 	count = dirEntries[dirEntryBrushsides].Size / 44
 	for i := int32(0); i < count; i++ {
 		v := &BrushSide{}
@@ -133,6 +172,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.BrushSides = append(b.BrushSides, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryVertexes].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek vertex: %w", err)
+	}
 	count = dirEntries[dirEntryVertexes].Size / 44
 	for i := int32(0); i < count; i++ {
 		v := &Vertex{}
@@ -143,6 +186,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.Vertexes = append(b.Vertexes, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryMeshverts].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek mesh vertex offset: %w", err)
+	}
 	count = dirEntries[dirEntryMeshverts].Size / 4
 	for i := int32(0); i < count; i++ {
 		v := &MeshVertexOffset{}
@@ -153,6 +200,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.MeshVertexOffsets = append(b.MeshVertexOffsets, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryEffects].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek effect: %w", err)
+	}
 	count = dirEntries[dirEntryEffects].Size / 72
 	for i := int32(0); i < count; i++ {
 		v := &Effect{}
@@ -163,6 +214,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.Effects = append(b.Effects, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryFaces].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek face: %w", err)
+	}
 	count = dirEntries[dirEntryFaces].Size / 108
 	for i := int32(0); i < count; i++ {
 		v := &Face{}
@@ -173,6 +228,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.Faces = append(b.Faces, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryLightmaps].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek lightmap: %w", err)
+	}
 	count = dirEntries[dirEntryLightmaps].Size / 49152
 	for i := int32(0); i < count; i++ {
 		v := &Lightmap{}
@@ -183,6 +242,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.Lightmaps = append(b.Lightmaps, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryLightvols].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek lightvolume: %w", err)
+	}
 	count = dirEntries[dirEntryLightvols].Size / 8
 	for i := int32(0); i < count; i++ {
 		v := &LightVolume{}
@@ -193,6 +256,10 @@ func parse(r io.ReadSeeker, b *BSP) error {
 		b.LightVolumes = append(b.LightVolumes, v)
 	}
 
+	_, err = r.Seek(int64(dirEntries[dirEntryVisdata].Offset), io.SeekStart)
+	if err != nil {
+		return fmt.Errorf("seek visdata: %w", err)
+	}
 	count = dirEntries[dirEntryVisdata].Size / 8
 	for i := int32(0); i < count; i++ {
 		v := &VisData{}
@@ -221,7 +288,7 @@ func parse(r io.ReadSeeker, b *BSP) error {
 	return nil
 }
 
-func parseFixedString(r io.ReadSeeker, size uint32) (string, error) {
+func parseFixedString(r io.Reader, size uint32) (string, error) {
 	in := make([]byte, size)
 	_, err := r.Read(in)
 	if err != nil {
