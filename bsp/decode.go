@@ -16,18 +16,17 @@ func Decode(r io.ReadSeeker) (*BSP, error) {
 }
 
 func (b *BSP) read(r io.ReadSeeker) error {
-	bh := &bspHeader{}
-	err := binary.Read(r, binary.LittleEndian, bh)
+	err := binary.Read(r, binary.LittleEndian, &b.header)
 	if err != nil {
 		return fmt.Errorf("read header: %w", err)
 	}
 
-	if string(bh.Header[:]) != "IBSP" {
-		return fmt.Errorf("header got %s, want IBSP", bh.Header[:])
+	if string(b.header.Header[:]) != "IBSP" {
+		return fmt.Errorf("header got %s, want IBSP", b.header.Header[:])
 	}
 
-	if bh.Version != 0x2E {
-		return fmt.Errorf("header version got 0x%x, want 0x2E", bh.Version)
+	if b.header.Version != 0x2E {
+		return fmt.Errorf("header version got 0x%x, want 0x2E", b.header.Version)
 	}
 
 	dirEntries := make([]entry, 19)
@@ -50,7 +49,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek texture: %w", err)
 	}
-	count := dirEntries[dirEntryTextures].Size / 76
+	count := dirEntries[dirEntryTextures].Size / dirEntryTexturesSize
 	for i := int32(0); i < count; i++ {
 		v := &Texture{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -64,7 +63,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek plane: %w", err)
 	}
-	count = dirEntries[dirEntryPlanes].Size / 16
+	count = dirEntries[dirEntryPlanes].Size / dirEntryPlanesSize
 	for i := int32(0); i < count; i++ {
 		v := &Plane{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -78,7 +77,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek node: %w", err)
 	}
-	count = dirEntries[dirEntryNodes].Size / 36
+	count = dirEntries[dirEntryNodes].Size / dirEntryNodesSize
 	for i := int32(0); i < count; i++ {
 		v := &Node{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -92,7 +91,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek leaf: %w", err)
 	}
-	count = dirEntries[dirEntryLeafs].Size / 8
+	count = dirEntries[dirEntryLeafs].Size / dirEntryLeafsSize
 	for i := int32(0); i < count; i++ {
 		v := &Leaf{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -106,7 +105,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek leaf face: %w", err)
 	}
-	count = dirEntries[dirEntryLeaffaces].Size / 4
+	count = dirEntries[dirEntryLeaffaces].Size / dirEntryLeaffacesSize
 	for i := int32(0); i < count; i++ {
 		v := &LeafFace{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -120,7 +119,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek leaf brush: %w", err)
 	}
-	count = dirEntries[dirEntryLeafbrushes].Size / 4
+	count = dirEntries[dirEntryLeafbrushes].Size / dirEntryLeafbrushesSize
 	for i := int32(0); i < count; i++ {
 		v := &LeafBrush{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -134,7 +133,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek model: %w", err)
 	}
-	count = dirEntries[dirEntryModels].Size / 40
+	count = dirEntries[dirEntryModels].Size / dirEntryModelsSize
 	for i := int32(0); i < count; i++ {
 		v := &Model{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -148,7 +147,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek brush: %w", err)
 	}
-	count = dirEntries[dirEntryBrushes].Size / 12
+	count = dirEntries[dirEntryBrushes].Size / dirEntryBrushesSize
 	for i := int32(0); i < count; i++ {
 		v := &Brush{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -162,7 +161,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek brush side: %w", err)
 	}
-	count = dirEntries[dirEntryBrushsides].Size / 44
+	count = dirEntries[dirEntryBrushsides].Size / dirEntryBrushesSize
 	for i := int32(0); i < count; i++ {
 		v := &BrushSide{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -176,7 +175,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek vertex: %w", err)
 	}
-	count = dirEntries[dirEntryVertexes].Size / 44
+	count = dirEntries[dirEntryVertexes].Size / dirEntryVertexesSize
 	for i := int32(0); i < count; i++ {
 		v := &Vertex{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -190,7 +189,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek mesh vertex offset: %w", err)
 	}
-	count = dirEntries[dirEntryMeshverts].Size / 4
+	count = dirEntries[dirEntryMeshverts].Size / dirEntryMeshvertsSize
 	for i := int32(0); i < count; i++ {
 		v := &MeshVertexOffset{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -204,7 +203,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek effect: %w", err)
 	}
-	count = dirEntries[dirEntryEffects].Size / 72
+	count = dirEntries[dirEntryEffects].Size / dirEntryEffectsSize
 	for i := int32(0); i < count; i++ {
 		v := &Effect{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -218,7 +217,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek face: %w", err)
 	}
-	count = dirEntries[dirEntryFaces].Size / 108
+	count = dirEntries[dirEntryFaces].Size / dirEntryFacesSize
 	for i := int32(0); i < count; i++ {
 		v := &Face{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -232,7 +231,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek lightmap: %w", err)
 	}
-	count = dirEntries[dirEntryLightmaps].Size / 49152
+	count = dirEntries[dirEntryLightmaps].Size / dirEntryLightmapsSize
 	for i := int32(0); i < count; i++ {
 		v := &Lightmap{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -246,7 +245,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek lightvolume: %w", err)
 	}
-	count = dirEntries[dirEntryLightvols].Size / 8
+	count = dirEntries[dirEntryLightvols].Size / dirEntryLightvolsSize
 	for i := int32(0); i < count; i++ {
 		v := &LightVolume{}
 		err = binary.Read(r, binary.LittleEndian, v)
@@ -260,7 +259,7 @@ func (b *BSP) read(r io.ReadSeeker) error {
 	if err != nil {
 		return fmt.Errorf("seek visdata: %w", err)
 	}
-	count = dirEntries[dirEntryVisdata].Size / 8
+	count = dirEntries[dirEntryVisdata].Size / dirEntryVisdataSize
 	for i := int32(0); i < count; i++ {
 		v := &VisData{}
 
@@ -296,10 +295,8 @@ func parseFixedString(r io.Reader, size uint32) (string, error) {
 	}
 	final := ""
 	for _, char := range in {
-		if char == 0x0 {
-			continue
-		}
 		final += string(char)
 	}
+	fmt.Println(len(final))
 	return final, nil
 }

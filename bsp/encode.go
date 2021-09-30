@@ -7,17 +7,19 @@ import (
 )
 
 func (b *BSP) Encode(w io.WriteSeeker) error {
-	err := binary.Write(w, binary.LittleEndian, []byte("IBSP"))
+
+	err := binary.Write(w, binary.LittleEndian, b.header)
 	if err != nil {
 		return fmt.Errorf("write header: %w", err)
 	}
-	err = binary.Write(w, binary.LittleEndian, []byte{0x2E, 0x00})
+
+	err = binary.Write(w, binary.LittleEndian, int32(8024))
 	if err != nil {
-		return fmt.Errorf("write header version: %w", err)
+		return fmt.Errorf("entity direntries: %w", err)
 	}
 
-	offset := int16(8 + 119)
-	size := int16(len(b.EntityInfo))
+	offset := int32(0)
+	size := int32(len(b.EntityInfo))
 	offset += size
 	err = binary.Write(w, binary.LittleEndian, offset)
 	if err != nil {
@@ -28,7 +30,7 @@ func (b *BSP) Encode(w io.WriteSeeker) error {
 		return fmt.Errorf("entity size: %w", err)
 	}
 
-	size = int16(len(b.Textures) * 72)
+	size = int32(len(b.Textures) * dirEntryTexturesSize)
 	offset += size
 	err = binary.Write(w, binary.LittleEndian, offset)
 	if err != nil {
@@ -39,7 +41,7 @@ func (b *BSP) Encode(w io.WriteSeeker) error {
 		return fmt.Errorf("texture size: %w", err)
 	}
 
-	size = int16(len(b.Planes) * 16)
+	size = int32(len(b.Planes) * dirEntryPlanesSize)
 	offset += size
 	err = binary.Write(w, binary.LittleEndian, offset)
 	if err != nil {
@@ -50,7 +52,7 @@ func (b *BSP) Encode(w io.WriteSeeker) error {
 		return fmt.Errorf("plane size: %w", err)
 	}
 
-	size = int16(len(b.Leaves) * 48)
+	size = int32(len(b.Leaves) * dirEntryLeafsSize)
 	offset += size
 	err = binary.Write(w, binary.LittleEndian, offset)
 	if err != nil {
@@ -61,7 +63,7 @@ func (b *BSP) Encode(w io.WriteSeeker) error {
 		return fmt.Errorf("leaf size: %w", err)
 	}
 
-	size = int16(len(b.LeafFaces) * 4)
+	size = int32(len(b.LeafFaces) * dirEntryLeaffacesSize)
 	offset += size
 	err = binary.Write(w, binary.LittleEndian, offset)
 	if err != nil {
@@ -72,7 +74,7 @@ func (b *BSP) Encode(w io.WriteSeeker) error {
 		return fmt.Errorf("leafface size: %w", err)
 	}
 
-	size = int16(len(b.LeafBrushes) * 4)
+	size = int32(len(b.LeafBrushes) * dirEntryLeafbrushesSize)
 	offset += size
 	err = binary.Write(w, binary.LittleEndian, offset)
 	if err != nil {

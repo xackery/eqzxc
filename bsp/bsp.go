@@ -8,6 +8,7 @@ import (
 
 // BSP is a binary space partition
 type BSP struct {
+	header     bspHeader
 	EntityInfo string
 	Textures   []*Texture
 	Planes     []*Plane
@@ -36,6 +37,13 @@ type BSP struct {
 	LightVolumes []*LightVolume
 	// VisInfo stores bit vectors that provide cluster-to-cluster visibility information. There is exactly one visdata record, with a length equal to that specified in the lump directory.
 	VisInfo []*VisData
+}
+
+func New() *BSP {
+	b := &BSP{}
+	b.header.Header = [4]byte{0x49, 0x42, 0x53, 0x50}
+	b.header.Version = 0x2E
+	return b
 }
 
 type entry struct {
@@ -210,4 +218,24 @@ const (
 	dirEntryLightvols = 15
 	//	Cluster-cluster visibility data.
 	dirEntryVisdata = 16
+)
+
+const (
+	//dirEntryEntitiesSize    = 0
+	dirEntryTexturesSize    = 76
+	dirEntryPlanesSize      = 16
+	dirEntryNodesSize       = 36
+	dirEntryLeafsSize       = 8
+	dirEntryLeaffacesSize   = 4
+	dirEntryLeafbrushesSize = 4
+	dirEntryModelsSize      = 40
+	dirEntryBrushesSize     = 12
+	dirEntryBrushsidesSize  = 44
+	dirEntryVertexesSize    = 44
+	dirEntryMeshvertsSize   = 4
+	dirEntryEffectsSize     = 72
+	dirEntryFacesSize       = 108
+	dirEntryLightmapsSize   = 49152
+	dirEntryLightvolsSize   = 8
+	dirEntryVisdataSize     = 8
 )
