@@ -64,7 +64,8 @@ func init() {
 }
 
 func Filename2CRC32(name string) uint32 {
-	return crc32.ChecksumIEEE([]byte(name))
+	return crc32.Checksum([]byte(name), crc32.MakeTable(0x04C11DB7))
+	//return crc32.ChecksumIEEE([]byte(name))
 }
 
 // FilenameCRC32 returns the CRC of a file's name
