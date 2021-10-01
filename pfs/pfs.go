@@ -8,9 +8,10 @@ import (
 
 // Pfs is a compression/zip format for everquest
 type Pfs struct {
-	ShortName       string
-	Files           []*PfsEntry
-	filenamePointer uint32
+	ShortName                string
+	Files                    []*PfsEntry
+	directoryChunks          []*ChunkEntry
+	directoryChunksTotalSize uint32
 }
 
 type ByOffset []*PfsEntry
@@ -42,40 +43,55 @@ func (s ByCRC) Less(i, j int) bool {
 }
 
 type PfsEntry struct {
-	Name         string
-	Data         []byte
-	CRC          uint32
-	Offset       uint32
-	deflatedData []*PfsDeflatedEntry
-	filePointer  uint32
+	Name            string
+	Data            []byte
+	CRC             uint32
+	Offset          uint32
+	chunks          []*ChunkEntry
+	chunksTotalSize uint32
+	filePointer     uint32
 }
 
-type PfsDeflatedEntry struct {
+type ChunkEntry struct {
 	deflatedSize int32
 	inflatedSize int32
 	data         []byte
 }
 
-func (e *PfsEntry) compress() error {
-	buf := &bytes.Buffer{}
+func deflateChunks(data []byte) ([]*ChunkEntry, uint32, error) {
 
-	dataSize := len(e.Data)
+	chunks := []*ChunkEntry{}
+	dataSize := len(data)
+	chunksTotalSize := uint32(0)
 	i := 0
 	for i < dataSize {
-		ce := &PfsDeflatedEntry{}
-		blockSize := 8193
-		if dataSize-i < 8192 {
-			blockSize = dataSize - i
+		ce := &ChunkEntry{}
+		blockSize := 8192
+		if dataSize < 8192 {
+			blockSize = dataSize
 		}
-		_, err := zlib.NewWriter(buf).Write(e.Data[i : i+blockSize])
+		buf := &bytes.Buffer{}
+		rawData := data[i : i+blockSize]
+		if rawData == nil {
+			fmt.Println("test")
+		}
+
+		zw := zlib.NewWriter(buf)
+		_, err := zw.Write(data[i : i+blockSize])
 		if err != nil {
-			return fmt.Errorf("write: %w", err)
+			return nil, 0, fmt.Errorf("write: %w", err)
+		}
+		err = zw.Flush()
+		if err != nil {
+			return nil, 0, fmt.Errorf("flush: %w", err)
 		}
 		ce.data = buf.Bytes()
 		ce.inflatedSize = int32(blockSize)
 		ce.deflatedSize = int32(len(ce.data))
-		e.deflatedData = append(e.deflatedData, ce)
+		chunks = append(chunks, ce)
+		chunksTotalSize += uint32(ce.deflatedSize)
 		i += blockSize
+		dataSize = len(data) - i
 	}
-	return nil
+	return chunks, chunksTotalSize, nil
 }
