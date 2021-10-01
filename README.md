@@ -8,19 +8,16 @@ EverQuest Zip Extract/Compressor is a go-based program for working with s3d, pfs
 
 
 ## Goals
-- load a pfs (*.eqg, *.s3d, or *.pfs)
-- load a wld
-- convert wld to bsp or gltf
-    - (convert lights.wld to gltf too!)
-    - (convert objects.wld to gltf too even if just meta info since it's a world - object reference)
-    - (extract wld region data to a markdown file you can edit or maybe use meta data points in blender if i wanted to be slick)
-- open bsp in netradiant, edit content, save
-- open gltf in blender, edit content, save
-- convert gltf to wld
-- convert bsp to wld
-- save modified wld back into pfs
-- have eq load the modified zone
-
+- run eqzxc, target a pfs archive (*.eqg, *.s3d, *.pak, or *.pfs)
+- parse wld data, convert to a raw format
+	- .map for quake 3 map editing?
+	- .gltf for 3ds/maya/blender editing?
+	- .toml for meta data tweaking that isn't supported by 3rd party programs
+		- lights.wld data
+		- objects.wld data refs    
+- run eqzxc, target a extracted pfs archive (_<name>.<ext>/ dir)
+	- parse .map files, toml, etc, and repack to eqg/s3d/pak
+	
 ## Inspiration
 
 https://github.com/alimalkhalifa/visual-eq-gltf-exporter/blob/master/src/loaders/s3d.js

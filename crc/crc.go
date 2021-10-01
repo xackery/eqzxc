@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"hash/crc32"
 	"io"
 )
 
@@ -63,15 +62,13 @@ func init() {
 	}
 }
 
-func Filename2CRC32(name string) uint32 {
-	return crc32.Checksum([]byte(name), crc32.MakeTable(0x04C11DB7))
-	//return crc32.ChecksumIEEE([]byte(name))
-}
-
 // FilenameCRC32 returns the CRC of a file's name
 func FilenameCRC32(name string) uint32 {
 	if len(name) == 0 {
 		return 0
+	}
+	if name[len(name)-1] != '\000' {
+		name += "\000"
 	}
 	index := uint32(0)
 	crc := uint32(0)

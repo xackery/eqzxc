@@ -69,7 +69,7 @@ func TestFilenameCrc(t *testing.T) {
 		{name: "pillar1odus.dds", crc: 1317575600},
 	}
 	for _, check := range checks {
-		crc := Filename2CRC32(check.name)
+		crc := FilenameCRC32(check.name)
 		if crc != uint32(check.crc) {
 			t.Fatalf("%s wanted 0x%x, got 0x%x (ieee: 0x%x)", strings.ToLower(check.name), check.crc, crc, crc32.ChecksumIEEE([]byte(check.name)))
 		}
