@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"io"
 	"sort"
-
-	"github.com/xackery/eqzxc/crc"
 )
 
 // Load will load a pfs file
@@ -87,7 +85,6 @@ func decode(r io.ReadSeeker, pfs *Pfs) error {
 		if err != nil {
 			return fmt.Errorf("seek cached offset %s: %w", debugInfo, err)
 		}
-
 		_, err = r.Seek(int64(entry.Offset), io.SeekStart)
 		if err != nil {
 			return fmt.Errorf("seek offset %s: %w", debugInfo, err)
@@ -174,18 +171,12 @@ func decode(r io.ReadSeeker, pfs *Pfs) error {
 			return fmt.Errorf("entry %d has no name", i)
 		}
 		entry.Name = filenames[i]
-		//TODO: fix CRC generation, #6
-
-		genCRC := crc.FilenameCRC32(entry.Name)
-		if err != nil {
-			return fmt.Errorf("generate crc: %w", err)
-		}
-		fmt.Println(i, entry.Name, entry.CRC, genCRC)
 	}
 	return nil
 }
 
 func parseFixedString(r io.ReadSeeker, size uint32) (string, error) {
+
 	in := make([]byte, size)
 	_, err := r.Read(in)
 	if err != nil {
