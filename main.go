@@ -47,7 +47,7 @@ func extract(path string) error {
 		return err
 	}
 	defer f.Close()
-	content, err := pfs.Load(f)
+	content, err := pfs.Decode(f)
 	if err != nil {
 		return fmt.Errorf("load: %w", err)
 	}

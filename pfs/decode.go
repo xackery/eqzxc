@@ -9,17 +9,17 @@ import (
 	"sort"
 )
 
-// Load will load a pfs file
-func Load(r io.ReadSeeker) (*Pfs, error) {
+// Decode will load a pfs file
+func Decode(r io.ReadSeeker) (*Pfs, error) {
 	pfs := &Pfs{}
-	err := decode(r, pfs)
+	err := parse(r, pfs)
 	if err != nil {
 		return nil, fmt.Errorf("decode: %w", err)
 	}
 	return pfs, nil
 }
 
-func decode(r io.ReadSeeker, pfs *Pfs) error {
+func parse(r io.ReadSeeker, pfs *Pfs) error {
 	var directoryIndex uint32
 	var magicNumber uint32
 	var versionNumber uint32

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestLoad(t *testing.T) {
+func TestDecode(t *testing.T) {
 	path := "test/nexus.wld"
 	r, err := os.Open(path)
 	if err != nil {
@@ -14,7 +14,7 @@ func TestLoad(t *testing.T) {
 	}
 	defer r.Close()
 
-	wld, err := Load(r)
+	wld, err := Decode(r)
 	if err != nil {
 		t.Fatalf("load wld: %v", err)
 	}

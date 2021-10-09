@@ -11,7 +11,7 @@ import (
 	"github.com/xackery/eqzxc/wld"
 )
 
-func TestLoad(t *testing.T) {
+func TestDecodeAndEncode(t *testing.T) {
 	filename := "arena.s3d"
 	path := fmt.Sprintf("test/%s", filename)
 	r, err := os.Open(path)
@@ -20,7 +20,7 @@ func TestLoad(t *testing.T) {
 	}
 	defer r.Close()
 
-	pfs, err := Load(r)
+	pfs, err := Decode(r)
 	if err != nil {
 		t.Fatalf("load pfs: %v", err)
 	}
@@ -34,7 +34,7 @@ func TestLoad(t *testing.T) {
 	if err != nil {
 		t.Fatalf("create test_out.s3d: %s", err.Error())
 	}
-	err = pfs.Save(f)
+	err = pfs.Encode(f)
 	if err != nil {
 		t.Fatalf("save: %s", err.Error())
 	}
@@ -58,7 +58,7 @@ func extract(t *testing.T, path string, pfs *Pfs) {
 		}
 
 		if filepath.Ext(entry.Name) == ".wld" {
-			wld, err := wld.Load(bytes.NewReader(entry.Data))
+			wld, err := wld.Decode(bytes.NewReader(entry.Data))
 			if err != nil {
 				t.Fatalf("wld load %s: %v", fPath, err)
 			}

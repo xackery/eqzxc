@@ -10,7 +10,7 @@ import (
 	"github.com/xackery/eqzxc/crc"
 )
 
-func (pfs *Pfs) Save(w io.WriteSeeker) error {
+func (pfs *Pfs) Encode(w io.WriteSeeker) error {
 	var err error
 	directoryIndex := uint32(12)
 	magicNumber := int32(0x20534650)

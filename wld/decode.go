@@ -9,8 +9,8 @@ import (
 	"github.com/xackery/eqzxc/wld/fragment"
 )
 
-// Load will load a world file
-func Load(r io.ReadSeeker) (*Wld, error) {
+// Decode will load a world file
+func Decode(r io.ReadSeeker) (*Wld, error) {
 	wld := &Wld{}
 	err := parse(r, wld)
 	if err != nil {
