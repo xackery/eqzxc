@@ -3,17 +3,19 @@ package pfs
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/xackery/eqzxc/wld"
+	"github.com/xackery/wd"
 )
 
 func TestDecodeAndEncode(t *testing.T) {
-	filename := "arena.s3d"
-	path := fmt.Sprintf("test/%s", filename)
+	filename := "arena"
+	path := fmt.Sprintf("test/%s.s3d", filename)
 	r, err := os.Open(path)
 	if err != nil {
 		t.Fatalf("open %s: %v", path, err)
@@ -28,17 +30,21 @@ func TestDecodeAndEncode(t *testing.T) {
 		t.Fatalf("nil pfs")
 	}
 	if 1 == 1 {
-		extract(t, fmt.Sprintf("test/_%s/", filename), pfs)
+		extract(t, fmt.Sprintf("test/_%s.s3d/", filename), pfs)
 	}
-	f, err := os.Create("test/test_out.s3d")
+
+	r.Seek(0, io.SeekStart)
+
+	f, err := os.Create(fmt.Sprintf("test/%s_out.s3d", filename))
 	if err != nil {
-		t.Fatalf("create test_out.s3d: %s", err.Error())
+		t.Fatalf("create %s_out.s3d: %s", filename, err.Error())
 	}
-	err = pfs.Encode(f)
+	defer f.Close()
+
+	err = pfs.Encode(&wd.WriteDebug{Input: r})
 	if err != nil {
 		t.Fatalf("save: %s", err.Error())
 	}
-
 }
 
 func extract(t *testing.T, path string, pfs *Pfs) {

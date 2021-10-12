@@ -8,6 +8,7 @@ import (
 	"sort"
 
 	"github.com/xackery/eqzxc/crc"
+	"github.com/xackery/wd"
 )
 
 func (pfs *Pfs) Encode(w io.WriteSeeker) error {
@@ -30,6 +31,7 @@ func (pfs *Pfs) Encode(w io.WriteSeeker) error {
 	sort.Sort(ByCRC(pfs.Files))
 
 	directoryBuf := &bytes.Buffer{}
+
 	err = binary.Write(directoryBuf, binary.LittleEndian, uint32(len(pfs.Files)))
 	if err != nil {
 		return fmt.Errorf("write len pfs.Files: %w", err)
@@ -69,17 +71,17 @@ func (pfs *Pfs) Encode(w io.WriteSeeker) error {
 	directoryIndex += uint32(4+4)*uint32(chunkSize) + uint32(pfs.directoryChunksTotalSize)
 
 	////
-	err = binary.Write(w, binary.LittleEndian, directoryIndex)
+	err = wd.PrintWrite(w, binary.LittleEndian, directoryIndex, "directory index")
 	if err != nil {
 		return fmt.Errorf("write directory index: %w", err)
 	}
 
-	err = binary.Write(w, binary.LittleEndian, &magicNumber)
+	err = wd.PrintWrite(w, binary.LittleEndian, &magicNumber, "magic number")
 	if err != nil {
 		return fmt.Errorf("write magic number: %w", err)
 	}
 
-	err = binary.Write(w, binary.LittleEndian, &versionNumber)
+	err = wd.PrintWrite(w, binary.LittleEndian, &versionNumber, "version number")
 	if err != nil {
 		return fmt.Errorf("write version number: %w", err)
 	}
@@ -93,15 +95,15 @@ func (pfs *Pfs) Encode(w io.WriteSeeker) error {
 		entry.filePointer = uint32(ptr)
 
 		for i, chunk := range entry.chunks {
-			err = binary.Write(w, binary.LittleEndian, chunk.deflatedSize)
+			err = wd.PrintWrite(w, binary.LittleEndian, chunk.deflatedSize, "deflated size %d/%d", i, len(entry.chunks))
 			if err != nil {
 				return fmt.Errorf("write %s deflated size %d: %w", entry.Name, i, err)
 			}
-			err = binary.Write(w, binary.LittleEndian, chunk.inflatedSize)
+			err = wd.PrintWrite(w, binary.LittleEndian, chunk.inflatedSize, "inflated size %d/%d", i, len(entry.chunks))
 			if err != nil {
 				return fmt.Errorf("write %s inflated size %d: %w", entry.Name, i, err)
 			}
-			err = binary.Write(w, binary.LittleEndian, chunk.data)
+			err = wd.PrintWrite(w, binary.LittleEndian, chunk.data, "chunk data %d/%d", i, len(entry.chunks))
 			if err != nil {
 				return fmt.Errorf("write %s deflated data %d: %w", entry.Name, i, err)
 			}
