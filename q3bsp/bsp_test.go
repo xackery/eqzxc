@@ -1,4 +1,4 @@
-package bsp
+package q3bsp
 
 import (
 	"os"
